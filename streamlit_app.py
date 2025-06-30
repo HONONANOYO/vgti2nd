@@ -1,13 +1,10 @@
 import streamlit as st
 
-st.title("VGTI 2nd 診断 - Likert 7段階スケール版")
+st.title("VGTI 2nd 診断")
 
 # ページ管理
 if "page" not in st.session_state:
     st.session_state.page = 0
-
-if "proceed" not in st.session_state:
-    st.session_state.proceed = False
 
 # 16タイプ
 vgti_options = [
@@ -27,9 +24,7 @@ if st.session_state.page == 0:
         submitted = st.form_submit_button("次へ")
         if submitted:
             st.session_state.vgti_code = vgti_code
-            st.session_state.proceed = True
-            st.session_state.page = 1
-            st.experimental_rerun()
+            st.session_state.page += 1  # ページ移動
 
 # ページ1: Likert質問
 elif st.session_state.page == 1:
@@ -92,9 +87,7 @@ elif st.session_state.page == 1:
 
         submitted = st.form_submit_button("診断結果を見る")
         if submitted:
-            st.session_state.proceed = True
-            st.session_state.page = 2
-            st.experimental_rerun()
+            st.session_state.page += 1  # ページ移動
 
 # ページ2: 診断結果
 elif st.session_state.page == 2:
@@ -154,4 +147,3 @@ elif st.session_state.page == 2:
     if st.button("もう一度診断する"):
         st.session_state.page = 0
         st.session_state.answers = {}
-        st.session_state.proceed = False
