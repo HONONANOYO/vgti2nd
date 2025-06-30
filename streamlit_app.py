@@ -23,7 +23,6 @@ if st.session_state.page == 0:
     if st.button("次へ"):
         st.session_state.vgti_code = vgti_code
         st.session_state.page = 1
-        st.experimental_rerun()
 
 # ページ1: Likert 質問
 elif st.session_state.page == 1:
@@ -31,7 +30,6 @@ elif st.session_state.page == 1:
     st.subheader(f"あなたのVGTIタイプ: {code}")
     st.markdown("---")
 
-    # 回答を session_state に格納
     if "answers" not in st.session_state:
         st.session_state.answers = {}
 
@@ -84,10 +82,8 @@ elif st.session_state.page == 1:
         st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
         st.session_state.answers[f"l{i}"] = val
 
-    st.markdown("---")
     if st.button("診断結果を見る"):
         st.session_state.page = 2
-        st.experimental_rerun()
 
 # ページ2: 診断結果
 elif st.session_state.page == 2:
@@ -147,4 +143,3 @@ elif st.session_state.page == 2:
     if st.button("もう一度診断する"):
         st.session_state.page = 0
         st.session_state.answers = {}
-        st.experimental_rerun()
