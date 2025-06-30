@@ -6,6 +6,9 @@ st.title("VGTI 2nd 診断 - Likert 7段階スケール版")
 if "page" not in st.session_state:
     st.session_state.page = 0
 
+if "proceed" not in st.session_state:
+    st.session_state.proceed = False
+
 # 16タイプ
 vgti_options = [
     "RHFL", "RHFD", "RHBL", "RHBD",
@@ -16,15 +19,19 @@ vgti_options = [
 
 # ページ0: VGTIタイプ選択
 if st.session_state.page == 0:
-    vgti_code = st.selectbox(
-        "あなたのVGTIタイプを選んでください",
-        options=vgti_options
-    )
-    if st.button("次へ"):
-        st.session_state.vgti_code = vgti_code
-        st.session_state.page = 1
+    with st.form("vgti_form"):
+        vgti_code = st.selectbox(
+            "あなたのVGTIタイプを選んでください",
+            options=vgti_options
+        )
+        submitted = st.form_submit_button("次へ")
+        if submitted:
+            st.session_state.vgti_code = vgti_code
+            st.session_state.proceed = True
+            st.session_state.page = 1
+            st.experimental_rerun()
 
-# ページ1: Likert 質問
+# ページ1: Likert質問
 elif st.session_state.page == 1:
     code = st.session_state.vgti_code
     st.subheader(f"あなたのVGTIタイプ: {code}")
@@ -33,57 +40,61 @@ elif st.session_state.page == 1:
     if "answers" not in st.session_state:
         st.session_state.answers = {}
 
-    # Likert質問
-    st.markdown("### 🍅 1. 食事の規則性について")
-    r_items = [
-        "小さい頃からの習慣だから三食食べている",
-        "自分で意識して三食食べている",
-        "健康のために三食食べている",
-        "なんとなく三食食べている"
-    ]
-    for i, item in enumerate(r_items):
-        val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"r{i}")
-        st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-        st.session_state.answers[f"r{i}"] = val
+    with st.form("likert_form"):
 
-    st.markdown("### 🍅 2. 食べる場所について")
-    h_items = [
-        "家で食べることが多い",
-        "家族が作ってくれるから家で食べる",
-        "健康に良いから家で食べる",
-        "落ち着けるから家で食べる"
-    ]
-    for i, item in enumerate(h_items):
-        val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"h{i}")
-        st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-        st.session_state.answers[f"h{i}"] = val
+        st.markdown("### 🍅 1. 食事の規則性について")
+        r_items = [
+            "小さい頃からの習慣だから三食食べている",
+            "自分で意識して三食食べている",
+            "健康のために三食食べている",
+            "なんとなく三食食べている"
+        ]
+        for i, item in enumerate(r_items):
+            val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"r{i}")
+            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
+            st.session_state.answers[f"r{i}"] = val
 
-    st.markdown("### 🍅 3. 野菜の障壁について")
-    f_items = [
-        "野菜は手軽に買える",
-        "野菜を調理しやすい",
-        "野菜が好き",
-        "野菜を食べるのが習慣になっている"
-    ]
-    for i, item in enumerate(f_items):
-        val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"f{i}")
-        st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-        st.session_state.answers[f"f{i}"] = val
+        st.markdown("### 🍅 2. 食べる場所について")
+        h_items = [
+            "家で食べることが多い",
+            "家族が作ってくれるから家で食べる",
+            "健康に良いから家で食べる",
+            "落ち着けるから家で食べる"
+        ]
+        for i, item in enumerate(h_items):
+            val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"h{i}")
+            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
+            st.session_state.answers[f"h{i}"] = val
 
-    st.markdown("### 🍅 4. 野菜の嗜好について")
-    l_items = [
-        "野菜をおいしいと思う",
-        "育てた経験があるので親しみがある",
-        "健康のために野菜を意識している",
-        "なんとなく野菜を食べている"
-    ]
-    for i, item in enumerate(l_items):
-        val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"l{i}")
-        st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-        st.session_state.answers[f"l{i}"] = val
+        st.markdown("### 🍅 3. 野菜の障壁について")
+        f_items = [
+            "野菜は手軽に買える",
+            "野菜を調理しやすい",
+            "野菜が好き",
+            "野菜を食べるのが習慣になっている"
+        ]
+        for i, item in enumerate(f_items):
+            val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"f{i}")
+            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
+            st.session_state.answers[f"f{i}"] = val
 
-    if st.button("診断結果を見る"):
-        st.session_state.page = 2
+        st.markdown("### 🍅 4. 野菜の嗜好について")
+        l_items = [
+            "野菜をおいしいと思う",
+            "育てた経験があるので親しみがある",
+            "健康のために野菜を意識している",
+            "なんとなく野菜を食べている"
+        ]
+        for i, item in enumerate(l_items):
+            val = st.slider(item, -3, 3, 0, 1, format="%d", key=f"l{i}")
+            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
+            st.session_state.answers[f"l{i}"] = val
+
+        submitted = st.form_submit_button("診断結果を見る")
+        if submitted:
+            st.session_state.proceed = True
+            st.session_state.page = 2
+            st.experimental_rerun()
 
 # ページ2: 診断結果
 elif st.session_state.page == 2:
@@ -143,3 +154,4 @@ elif st.session_state.page == 2:
     if st.button("もう一度診断する"):
         st.session_state.page = 0
         st.session_state.answers = {}
+        st.session_state.proceed = False
