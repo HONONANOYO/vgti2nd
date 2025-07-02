@@ -147,3 +147,96 @@ elif st.session_state.page == 2:
     if st.button("もう一度診断する"):
         st.session_state.page = 0
         st.session_state.answers = {}
+import streamlit as st
+
+# ページ管理
+if "page" not in st.session_state:
+    st.session_state.page = 1
+
+# 頭文字の意味
+letter_meaning = {
+    "R": "規則性",
+    "I": "不規則性",
+    "H": "家食",
+    "E": "外食",
+    "F": "障壁少",
+    "B": "障壁多",
+    "L": "意識高",
+    "D": "意識低"
+}
+
+# 逆タイプ
+opposite_letter = {
+    "R": "I",
+    "I": "R",
+    "H": "E",
+    "E": "H",
+    "F": "B",
+    "B": "F",
+    "L": "D",
+    "D": "L"
+}
+
+# ====================
+# 1ページ目
+# ====================
+if st.session_state.page == 1:
+    st.header("VGTI2nd - キャラクター確認")
+
+    # もともとの診断結果のキャラクターを選んでもらう
+    selected_character = st.selectbox(
+        "前回診断で出たキャラクターを選んでください",
+        [
+            "RHFL", "RHFD", "REFL", "REFD", "IHFL", "IHFD", "IEFL", "IEFD",
+            "RHBH", "RHBD", "REBH", "REBD", "IHBH", "IHBD", "IEBH", "IEBD"
+        ]
+    )
+    st.session_state.character = selected_character
+
+    if st.button("次へ"):
+        st.session_state.page = 2
+
+# ====================
+# 2ページ目
+# ====================
+elif st.session_state.page == 2:
+    st.header("2nd診断チェック")
+
+    # 4文字を取り出す
+    char4 = list(st.session_state.character)
+
+    # ユーザーに%で確認してもらう
+    scores = {}
+    for letter in char4:
+        question = f"{letter_meaning[letter]}の自己評価（%）"
+        scores[letter] = st.slider(question, 0, 100, 70)
+
+    # 逆文字チェック
+    revised = []
+    final_char = []
+
+    for letter in char4:
+        if scores[letter] < 60:
+            new_letter = opposite_letter[letter]
+            final_char.append(new_letter)
+            revised.append((letter, new_letter))
+        else:
+            final_char.append(letter)
+
+    final_type = "".join(final_char)
+
+    st.markdown("---")
+    st.subheader("診断結果の再確認")
+
+    st.write(f"**前回診断キャラクター:** {st.session_state.character}")
+    st.write(f"**今回の再確認後キャラクター:** {final_type}")
+
+    if revised:
+        st.warning("以下の項目について逆の頭文字の方が合う可能性があります。")
+        for old, new in revised:
+            st.write(f"- {letter_meaning[old]} → {letter_meaning[new]}")
+
+    # もう一度やるボタン
+    if st.button("最初に戻る"):
+        st.session_state.page = 1
+
