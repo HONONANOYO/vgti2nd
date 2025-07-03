@@ -1,4 +1,4 @@
-\import streamlit as st
+import streamlit as st
 
 st.title("VGTI 2nd 診断")
 
