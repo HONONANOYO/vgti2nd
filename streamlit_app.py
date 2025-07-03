@@ -17,7 +17,7 @@ letter_meaning = {
     "D": "意識低"
 }
 
-# 逆頭文字
+# 逆文字
 opposite_letter = {
     "R": "I",
     "I": "R",
@@ -36,6 +36,15 @@ vgti_options = [
     "IEFL", "IEFD", "IEBL", "IEBD"
 ]
 
+# 日本語ラベル5段階
+labels = {
+    "まったくそう思わない": 1,
+    "あまりそう思わない": 2,
+    "どちらでもない": 3,
+    "ややそう思う": 4,
+    "とてもそう思う": 5
+}
+
 # -------------------
 # ページ0: キャラクター選択
 # -------------------
@@ -52,7 +61,7 @@ if st.session_state.page == 0:
             st.session_state.page = 1
 
 # -------------------
-# ページ1: Likert詳細質問
+# ページ1: 詳細質問
 # -------------------
 elif st.session_state.page == 1:
     code = st.session_state.vgti_code
@@ -65,14 +74,13 @@ elif st.session_state.page == 1:
     with st.form("likert_form"):
         st.markdown("### 🍅 1. 食事の規則性について")
         for i, q in enumerate([
-            "小さい頃からの習慣だから三食食べている",
+            "小さい頃からの習慣で三食食べている",
             "自分で意識して三食食べている",
             "健康のために三食食べている",
             "なんとなく三食食べている"
         ]):
-            val = st.slider(q, -3, 3, 0, 1, format="%d", key=f"r{i}")
-            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-            st.session_state.answers[f"r{i}"] = val
+            selected = st.radio(q, list(labels.keys()), key=f"r{i}")
+            st.session_state.answers[f"r{i}"] = labels[selected]
 
         st.markdown("### 🍅 2. 食べる場所について")
         for i, q in enumerate([
@@ -81,84 +89,10 @@ elif st.session_state.page == 1:
             "健康に良いから家で食べる",
             "落ち着けるから家で食べる"
         ]):
-            val = st.slider(q, -3, 3, 0, 1, format="%d", key=f"h{i}")
-            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-            st.session_state.answers[f"h{i}"] = val
+            selected = st.radio(q, list(labels.keys()), key=f"h{i}")
+            st.session_state.answers[f"h{i}"] = labels[selected]
 
         st.markdown("### 🍅 3. 野菜の障壁について")
         for i, q in enumerate([
             "野菜は手軽に買える",
             "野菜を調理しやすい",
-            "野菜が好き",
-            "野菜を食べるのが習慣になっている"
-        ]):
-            val = st.slider(q, -3, 3, 0, 1, format="%d", key=f"f{i}")
-            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-            st.session_state.answers[f"f{i}"] = val
-
-        st.markdown("### 🍅 4. 野菜の嗜好について")
-        for i, q in enumerate([
-            "野菜をおいしいと思う",
-            "育てた経験があるので親しみがある",
-            "健康のために野菜を意識している",
-            "なんとなく野菜を食べている"
-        ]):
-            val = st.slider(q, -3, 3, 0, 1, format="%d", key=f"l{i}")
-            st.caption("まったくそう思わない (-3) ←→ とてもそう思う (+3)")
-            st.session_state.answers[f"l{i}"] = val
-
-        submitted = st.form_submit_button("診断結果を見る")
-        if submitted:
-            st.session_state.page = 2
-
-# -------------------
-# ページ2: 診断結果
-# -------------------
-elif st.session_state.page == 2:
-    code = st.session_state.vgti_code
-    char4 = list(code)
-
-    answers = st.session_state.answers
-
-    r_score = sum(answers[f"r{i}"] for i in range(4))
-    h_score = sum(answers[f"h{i}"] for i in range(4))
-    f_score = sum(answers[f"f{i}"] for i in range(4))
-    l_score = sum(answers[f"l{i}"] for i in range(4))
-
-    axis_scores = {
-        "R": (r_score + 12) / 24 * 100,
-        "H": (h_score + 12) / 24 * 100,
-        "F": (f_score + 12) / 24 * 100,
-        "L": (l_score + 12) / 24 * 100
-    }
-
-    # 逆文字変換
-    final_code = []
-    revised = []
-    for idx, letter in enumerate(char4):
-        score = axis_scores[letter]
-        if score < 60:
-            final_code.append(opposite_letter[letter])
-            revised.append((letter, opposite_letter[letter]))
-        else:
-            final_code.append(letter)
-
-    final_type = "".join(final_code)
-
-    st.subheader("🍅 診断結果まとめ")
-    for key, val in axis_scores.items():
-        st.write(f"{letter_meaning[key]}: {val:.1f}%")
-        st.progress(val/100)
-
-    st.markdown("---")
-    st.write(f"**前回のキャラクター:** {code}")  
-    st.write(f"**今回の再確認後の提案キャラクター:** {final_type}")
-
-    if revised:
-        st.warning("以下の項目について逆の頭文字がより合う可能性があります。")
-        for before, after in revised:
-            st.write(f"- {letter_meaning[before]} → {letter_meaning[after]}")
-
-    if st.button("もう一度診断する"):
-        st.session_state.page = 0
-        st.session_state.answers = {}
