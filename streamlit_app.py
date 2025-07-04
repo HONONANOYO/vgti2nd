@@ -1,173 +1,107 @@
 import streamlit as st
 
-st.title("VGTI 2nd 診断")
+st.set_page_config(page_title="ベジタイプ16診断", page_icon="🥦")
 
-if "page" not in st.session_state:
-    st.session_state.page = 0
+st.title("ベジタイプ16診断（12問版）")
 
-# 5段階の日本語
-labels = {
-    1: "まったくそう思わない",
-    2: "あまりそう思わない",
-    3: "どちらでもない",
-    4: "そう思う",
-    5: "とてもそう思う"
-}
+# =========================
+# 12問の質問
+# =========================
+questions = [
+    {"q": "1日3食食べていますか？", "options": ["Regular", "Irregular"]},
+    {"q": "食事の時間は一定ですか？", "options": ["Yes", "No"]},
+    {"q": "朝食を週にどのくらい食べますか？", "options": ["毎日", "週数回", "ほとんど食べない"]},
+    {"q": "家で食べることが多いですか？", "options": ["Home", "Eat out"]},
+    {"q": "外食のとき野菜を選びますか？", "options": ["Yes", "No"]},
+    {"q": "外食の頻度は？", "options": ["週0回", "週1〜2回", "週3回以上"]},
+    {"q": "野菜を食べるのに障壁を感じますか？", "options": ["Free", "Barrier"]},
+    {"q": "野菜の価格が高いと感じますか？", "options": ["No", "Yes"]},
+    {"q": "野菜の調理は面倒だと感じますか？", "options": ["No", "Yes"]},
+    {"q": "野菜を意識して食べていますか？", "options": ["Yes", "No"]},
+    {"q": "野菜は健康に必要だと思いますか？", "options": ["Yes", "No"]},
+    {"q": "野菜は好きですか？", "options": ["Like", "Dislike"]},
+]
 
-# 頭文字の意味
-letter_meaning = {
-    "R": "生活リズム",
-    "I": "不規則性",
-    "H": "食事スタイル（家食）",
-    "E": "食事スタイル（外食）",
-    "F": "野菜摂取障壁が低い",
-    "B": "野菜摂取障壁が高い",
-    "L": "野菜への意識が高い",
-    "D": "野菜への意識が低い"
-}
+# =========================
+# 回答受付
+# =========================
+user_answers = []
 
-# 質問
-questions = {
-    "R": [
-        "小さい頃からの習慣だから三食食べている",
-        "自分で意識して三食食べている",
-        "健康のために三食食べている",
-        "なんとなく三食食べている"
-    ],
-    "I": [
-        "好きな食べ物がないから三食食べていない",
-        "食べる必要性を感じない",
-        "食べる時間がない",
-        "金銭的に余裕がない"
-    ],
-    "H": [
-        "家で食べるのは安いから",
-        "家族が作ってくれるから家で食べる",
-        "健康に良いから家で食べる",
-        "落ち着けるから家で食べる"
-    ],
-    "E": [
-        "料理をするのが面倒だから外で食べる",
-        "外食の方がおいしいから外で食べる",
-        "買って食べる方が楽だから外で食べる",
-        "気分を変えたいから外で食べる"
-    ],
-    "F": [
-        "もともと野菜が好きだから野菜を食べる",
-        "家族が作ってくれるから野菜を食べる",
-        "野菜を手軽に買えるから食べる",
-        "野菜を食べるのが習慣になっている"
-    ],
-    "B": [
-        "野菜を買うのにお金がかかるからあまり食べない",
-        "野菜を調理する時間がないからあまり食べない",
-        "野菜の味が苦手であまり食べない",
-        "野菜の必要性を感じない"
-    ],
-    "L": [
-        "野菜をおいしいと思う",
-        "育てた経験があるので親しみがある",
-        "健康に良いから積極的に食べている",
-        "なんとなく野菜を食べる"
-    ],
-    "D": [
-        "野菜の味が苦手で意識して食べない",
-        "食感が苦手で意識して食べない",
-        "においが苦手で意識して食べない",
-        "なんとなく気が向かない"
-    ]
-}
+for i, q in enumerate(questions):
+    answer = st.radio(q["q"], q["options"], key=i)
+    user_answers.append(answer)
 
-# ページ0
-if st.session_state.page == 0:
-    st.subheader("VGTIタイプ選択")
-    vgti_code = st.selectbox(
-        "前回診断で出たあなたのVGTIタイプを選んでください",
-        [
-            "RHFL", "RHFD", "RHBL", "RHBD",
-            "REFL", "REFD", "REBL", "REBD",
-            "IHFL", "IHFD", "IHBL", "IHBD",
-            "IEFL", "IEFD", "IEBL", "IEBD"
-        ]
-    )
-    if st.button("次へ"):
-        st.session_state.vgti_code = vgti_code
-        st.session_state.page = 1
-
-# ページ1
-elif st.session_state.page == 1:
-    code = st.session_state.vgti_code
-    char4 = list(code)
-
-    st.subheader(f"あなたのVGTIタイプ: {code}")
-    st.markdown("---")
-
-    if "answers" not in st.session_state:
-        st.session_state.answers = {}
-
-    for idx, letter in enumerate(char4):
-        st.markdown(f"### 🍅 {letter_meaning[letter]}について")
-        for q_idx, q in enumerate(questions[letter]):
-            slider_key = f"{letter}{q_idx}"
-            val = st.slider(
-                q,
-                min_value=1,
-                max_value=5,
-                value=st.session_state.answers.get(slider_key, 3),
-                format="%d"
-            )
-            st.session_state.answers[slider_key] = val
-            st.caption(f"選択: {labels[val]}")
-
-    if st.button("診断結果を見る"):
-        st.session_state.page = 2
-
-# ページ2
-elif st.session_state.page == 2:
-    code = st.session_state.vgti_code
-    char4 = list(code)
-    answers = st.session_state.answers
-
-    # スコア計算
-    scores = {}
-    for letter in char4:
-        score = sum(answers[f"{letter}{i}"] for i in range(4))
-        percent = (score - 4) / 16 * 100
-        scores[letter] = percent
-
-    # 逆タイプ判定
-    opposite_letter = {
-        "R": "I", "I": "R",
-        "H": "E", "E": "H",
-        "F": "B", "B": "F",
-        "L": "D", "D": "L"
+# =========================
+# 診断ボタン
+# =========================
+if st.button("診断する！"):
+    # 回答を数値に変換
+    answer_map = {
+        "Regular": 1, "Irregular": 0,
+        "Yes": 1, "No": 0,
+        "毎日": 1, "週数回": 0.5, "ほとんど食べない": 0,
+        "Home": 1, "Eat out": 0,
+        "週0回": 1, "週1〜2回": 0.5, "週3回以上": 0,
+        "Free": 1, "Barrier": 0,
+        "Like": 1, "Dislike": 0,
     }
-    revised = []
-    final_code = []
-    for letter in char4:
-        if scores[letter] < 60:
-            new_letter = opposite_letter[letter]
-            final_code.append(new_letter)
-            revised.append((letter_meaning[letter], letter_meaning[new_letter]))
-        else:
-            final_code.append(letter)
+    user_vector = [answer_map[a] for a in user_answers]
 
-    final_type = "".join(final_code)
+    # =========================
+    # 16タイプの理想ベクトル
+    # =========================
+    types = [
+        "RHFL", "RHFD", "RHBL", "RHBD",
+        "REFL", "REFD", "REBL", "REBD",
+        "IHFL", "IHFD", "IHBL", "IHBD",
+        "IEFL", "IEFD", "IEBL", "IEBD"
+    ]
 
-    st.subheader("🍅 診断結果まとめ")
-    for letter in char4:
-        st.write(f"{letter_meaning[letter]}: {scores[letter]:.1f}%")
-        st.progress(scores[letter]/100)
+    ideal_vectors = [
+        [1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,0,0,0],
+        [1,1,1,1,1,1,0,0,0,1,1,1],
+        [1,1,1,1,1,1,0,0,0,0,0,0],
+        [1,1,1,0,0,0,1,1,1,1,1,1],
+        [1,1,1,0,0,0,1,1,1,0,0,0],
+        [1,1,1,0,0,0,0,0,0,1,1,1],
+        [1,1,1,0,0,0,0,0,0,0,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1],
+        [0,0,0,1,1,1,1,1,1,0,0,0],
+        [0,0,0,1,1,1,0,0,0,1,1,1],
+        [0,0,0,1,1,1,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,1,1,1,1,1],
+        [0,0,0,0,0,0,1,1,1,0,0,0],
+        [0,0,0,0,0,0,0,0,0,1,1,1],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+    ]
 
-    st.markdown("---")
-    st.write(f"**前回のキャラクター:** {code}")
-    st.write(f"**今回の再確認後の提案キャラクター:** {final_type}")
+    # =========================
+    # 一致率計算
+    # =========================
+    scores = []
+    for ideal in ideal_vectors:
+        # 12問中一致している項目の割合
+        match = 0
+        for i in range(12):
+            # 週数回や週1〜2回は0.5なので近い方に0.5点
+            if abs(user_vector[i] - ideal[i]) == 0:
+                match += 1
+            elif user_vector[i] == 0.5 and ideal[i] == 1:
+                match += 0.5
+            elif user_vector[i] == 0.5 and ideal[i] == 0:
+                match += 0.5
+        percent = (match/12)*100
+        scores.append(percent)
 
-    if revised:
-        st.warning("以下の項目は逆タイプのほうが合う可能性があります👇")
-        for before, after in revised:
-            st.write(f"- {before} → {after}")
+    # =========================
+    # 表示
+    # =========================
+    st.subheader("診断結果")
+    for t, s in zip(types, scores):
+        st.write(f"**{t}度：{s:.1f}%**")
 
-    if st.button("もう一度診断する"):
-        st.session_state.page = 0
-        st.session_state.answers = {}
+    # 代表タイプ
+    max_idx = scores.index(max(scores))
+    st.success(f"あなたの代表タイプは **{types[max_idx]}** です！")
+
