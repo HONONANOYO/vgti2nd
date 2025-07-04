@@ -1,35 +1,173 @@
 import streamlit as st
 
-st.title("VGTI 横並びサンプル")
+st.title("VGTI 2nd 診断")
 
-if "r_answers" not in st.session_state:
-    st.session_state.r_answers = [3, 3, 3, 3]  # デフォルト: 中央
+if "page" not in st.session_state:
+    st.session_state.page = 0
 
-# 5段階のラベル
-labels = ["まったくそう思わない", "あまりそう思わない", "どちらでもない", "そう思う", "とてもそう思う"]
+# 5段階の日本語
+labels = {
+    1: "まったくそう思わない",
+    2: "あまりそう思わない",
+    3: "どちらでもない",
+    4: "そう思う",
+    5: "とてもそう思う"
+}
 
-# 円の絵文字
-icons = ["⚪️", "🟢", "🟡", "🟠", "🔴"]
+# 頭文字の意味
+letter_meaning = {
+    "R": "生活リズム",
+    "I": "不規則性",
+    "H": "食事スタイル（家食）",
+    "E": "食事スタイル（外食）",
+    "F": "野菜摂取障壁が低い",
+    "B": "野菜摂取障壁が高い",
+    "L": "野菜への意識が高い",
+    "D": "野菜への意識が低い"
+}
 
 # 質問
-r_questions = [
-    "小さい頃からの習慣だから三食食べている",
-    "自分で意識して三食食べている",
-    "健康のために三食食べている",
-    "なんとなく三食食べている"
-]
+questions = {
+    "R": [
+        "小さい頃からの習慣だから三食食べている",
+        "自分で意識して三食食べている",
+        "健康のために三食食べている",
+        "なんとなく三食食べている"
+    ],
+    "I": [
+        "好きな食べ物がないから三食食べていない",
+        "食べる必要性を感じない",
+        "食べる時間がない",
+        "金銭的に余裕がない"
+    ],
+    "H": [
+        "家で食べるのは安いから",
+        "家族が作ってくれるから家で食べる",
+        "健康に良いから家で食べる",
+        "落ち着けるから家で食べる"
+    ],
+    "E": [
+        "料理をするのが面倒だから外で食べる",
+        "外食の方がおいしいから外で食べる",
+        "買って食べる方が楽だから外で食べる",
+        "気分を変えたいから外で食べる"
+    ],
+    "F": [
+        "もともと野菜が好きだから野菜を食べる",
+        "家族が作ってくれるから野菜を食べる",
+        "野菜を手軽に買えるから食べる",
+        "野菜を食べるのが習慣になっている"
+    ],
+    "B": [
+        "野菜を買うのにお金がかかるからあまり食べない",
+        "野菜を調理する時間がないからあまり食べない",
+        "野菜の味が苦手であまり食べない",
+        "野菜の必要性を感じない"
+    ],
+    "L": [
+        "野菜をおいしいと思う",
+        "育てた経験があるので親しみがある",
+        "健康に良いから積極的に食べている",
+        "なんとなく野菜を食べる"
+    ],
+    "D": [
+        "野菜の味が苦手で意識して食べない",
+        "食感が苦手で意識して食べない",
+        "においが苦手で意識して食べない",
+        "なんとなく気が向かない"
+    ]
+}
 
-for q_idx, question in enumerate(r_questions):
-    st.markdown(f"#### 🍅 {question}")
-    cols = st.columns(5)
-    for i, col in enumerate(cols):
-        if col.button(f"{icons[i]}"):
-            st.session_state.r_answers[q_idx] = i + 1
-    
-    # 選択中のラベルを表示
-    current = st.session_state.r_answers[q_idx]
-    st.write(f"→ 今の選択: {labels[current - 1]}")
+# ページ0
+if st.session_state.page == 0:
+    st.subheader("VGTIタイプ選択")
+    vgti_code = st.selectbox(
+        "前回診断で出たあなたのVGTIタイプを選んでください",
+        [
+            "RHFL", "RHFD", "RHBL", "RHBD",
+            "REFL", "REFD", "REBL", "REBD",
+            "IHFL", "IHFD", "IHBL", "IHBD",
+            "IEFL", "IEFD", "IEBL", "IEBD"
+        ]
+    )
+    if st.button("次へ"):
+        st.session_state.vgti_code = vgti_code
+        st.session_state.page = 1
 
-st.markdown("---")
-if st.button("次へ"):
-    st.write("次の処理に進みます（テスト用）")
+# ページ1
+elif st.session_state.page == 1:
+    code = st.session_state.vgti_code
+    char4 = list(code)
+
+    st.subheader(f"あなたのVGTIタイプ: {code}")
+    st.markdown("---")
+
+    if "answers" not in st.session_state:
+        st.session_state.answers = {}
+
+    for idx, letter in enumerate(char4):
+        st.markdown(f"### 🍅 {letter_meaning[letter]}について")
+        for q_idx, q in enumerate(questions[letter]):
+            slider_key = f"{letter}{q_idx}"
+            val = st.slider(
+                q,
+                min_value=1,
+                max_value=5,
+                value=st.session_state.answers.get(slider_key, 3),
+                format="%d"
+            )
+            st.session_state.answers[slider_key] = val
+            st.caption(f"選択: {labels[val]}")
+
+    if st.button("診断結果を見る"):
+        st.session_state.page = 2
+
+# ページ2
+elif st.session_state.page == 2:
+    code = st.session_state.vgti_code
+    char4 = list(code)
+    answers = st.session_state.answers
+
+    # スコア計算
+    scores = {}
+    for letter in char4:
+        score = sum(answers[f"{letter}{i}"] for i in range(4))
+        percent = (score - 4) / 16 * 100
+        scores[letter] = percent
+
+    # 逆タイプ判定
+    opposite_letter = {
+        "R": "I", "I": "R",
+        "H": "E", "E": "H",
+        "F": "B", "B": "F",
+        "L": "D", "D": "L"
+    }
+    revised = []
+    final_code = []
+    for letter in char4:
+        if scores[letter] < 60:
+            new_letter = opposite_letter[letter]
+            final_code.append(new_letter)
+            revised.append((letter_meaning[letter], letter_meaning[new_letter]))
+        else:
+            final_code.append(letter)
+
+    final_type = "".join(final_code)
+
+    st.subheader("🍅 診断結果まとめ")
+    for letter in char4:
+        st.write(f"{letter_meaning[letter]}: {scores[letter]:.1f}%")
+        st.progress(scores[letter]/100)
+
+    st.markdown("---")
+    st.write(f"**前回のキャラクター:** {code}")
+    st.write(f"**今回の再確認後の提案キャラクター:** {final_type}")
+
+    if revised:
+        st.warning("以下の項目は逆タイプのほうが合う可能性があります👇")
+        for before, after in revised:
+            st.write(f"- {before} → {after}")
+
+    if st.button("もう一度診断する"):
+        st.session_state.page = 0
+        st.session_state.answers = {}
