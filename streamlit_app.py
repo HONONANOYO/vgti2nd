@@ -14,7 +14,7 @@ labels = {
     "とてもそう思う": 5
 }
 
-# 頭文字の説明
+# 頭文字の意味
 letter_meaning = {
     "R": "生活リズム",
     "I": "不規則性",
@@ -26,7 +26,7 @@ letter_meaning = {
     "D": "野菜への意識が低い"
 }
 
-# 質問セット
+# 質問
 questions = {
     "R": [
         "小さい頃からの習慣だから三食食べている",
@@ -81,20 +81,18 @@ questions = {
 # ページ0: タイプ選択
 if st.session_state.page == 0:
     st.subheader("VGTIタイプ選択")
-    with st.form("vgti_form"):
-        vgti_code = st.selectbox(
-            "前回診断で出たあなたのVGTIタイプを選んでください",
-            [
-                "RHFL", "RHFD", "RHBL", "RHBD",
-                "REFL", "REFD", "REBL", "REBD",
-                "IHFL", "IHFD", "IHBL", "IHBD",
-                "IEFL", "IEFD", "IEBL", "IEBD"
-            ]
-        )
-        submitted = st.form_submit_button("次へ")
-        if submitted:
-            st.session_state.vgti_code = vgti_code
-            st.session_state.page = 1
+    vgti_code = st.selectbox(
+        "前回診断で出たあなたのVGTIタイプを選んでください",
+        [
+            "RHFL", "RHFD", "RHBL", "RHBD",
+            "REFL", "REFD", "REBL", "REBD",
+            "IHFL", "IHFD", "IHBL", "IHBD",
+            "IEFL", "IEFD", "IEBL", "IEBD"
+        ]
+    )
+    if st.button("次へ"):
+        st.session_state.vgti_code = vgti_code
+        st.session_state.page = 1
 
 # ページ1: Likert質問
 elif st.session_state.page == 1:
@@ -107,31 +105,30 @@ elif st.session_state.page == 1:
     if "answers" not in st.session_state:
         st.session_state.answers = {}
 
-    with st.form("likert_form"):
-        for idx, letter in enumerate(char4):
-            st.markdown(f"### 🍅 {letter_meaning[letter]}について")
-            for q_idx, q in enumerate(questions[letter]):
-                ans = st.radio(q, list(labels.keys()), key=f"{letter}_{q_idx}")
-                st.session_state.answers[f"{letter}{q_idx}"] = labels[ans]
-        submitted = st.form_submit_button("診断結果を見る")
-        if submitted:
-            st.session_state.page = 2
+    # 質問
+    for idx, letter in enumerate(char4):
+        st.markdown(f"### 🍅 {letter_meaning[letter]}について")
+        for q_idx, q in enumerate(questions[letter]):
+            ans = st.radio(q, list(labels.keys()), key=f"{letter}_{q_idx}")
+            st.session_state.answers[f"{letter}{q_idx}"] = labels[ans]
 
-# ページ2: 診断結果
+    if st.button("診断結果を見る"):
+        st.session_state.page = 2
+
+# ページ2: 結果
 elif st.session_state.page == 2:
     code = st.session_state.vgti_code
     char4 = list(code)
     answers = st.session_state.answers
 
-    # 各軸の合計スコア
+    # 各軸スコア
     scores = {}
     for letter in char4:
         score = sum(answers[f"{letter}{i}"] for i in range(4))
-        # 4問×5点 → max20
         percent = (score - 4) / 16 * 100
         scores[letter] = percent
 
-    # 逆タイプ判定
+    # 逆タイプ
     opposite_letter = {
         "R": "I", "I": "R",
         "H": "E", "E": "H",
