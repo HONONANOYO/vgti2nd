@@ -14,9 +14,9 @@ questions = [
     {"q": "どこで食べることが多いですか？", "options": ["家", "外食"]},
     {"q": "外食のとき野菜を選びますか？", "options": ["Yes", "No"]},
     {"q": "外食の頻度は？", "options": ["週0回", "週1〜2回", "週3回以上"]},
-    {"q": "野菜を食べるのに障壁を感じますか？", "options": ["YES", "NO"]},
-    {"q": "野菜の価格が高いと感じますか？", "options": ["YES", "NO"]},
-    {"q": "野菜の調理は面倒だと感じますか？", "options": ["YES", "NO"]},
+    {"q": "野菜を食べるのに障壁を感じますか？", "options": ["Yes", "No"]},  # Yes=0にしたい
+    {"q": "野菜の価格が高いと感じますか？", "options": ["Yes", "No"]},      # Yes=0にしたい
+    {"q": "野菜の調理は面倒だと感じますか？", "options": ["Yes", "No"]},
     {"q": "野菜を意識して食べていますか？", "options": ["Yes", "No"]},
     {"q": "野菜は健康に必要だと思いますか？", "options": ["Yes", "No"]},
     {"q": "野菜は好きですか？", "options": ["Like", "Dislike"]},
@@ -42,10 +42,18 @@ if st.button("診断する！"):
         "毎日": 1, "週数回": 0.5, "ほとんど食べない": 0,
         "家": 1, "外食": 0,
         "週0回": 1, "週1〜2回": 0.5, "週3回以上": 0,
-        "YES": 1, "NO": 0,
         "Like": 1, "Dislike": 0,
     }
-    user_vector = [answer_map[a] for a in user_answers]
+
+    user_vector = []
+    for i, a in enumerate(user_answers):
+        if i == 6 or i == 7:  # 障壁・価格の質問
+            if a == "Yes":
+                user_vector.append(0)
+            else:
+                user_vector.append(1)
+        else:
+            user_vector.append(answer_map[a])
 
     # =========================
     # 16タイプの理想ベクトル
@@ -81,17 +89,13 @@ if st.button("診断する！"):
     # =========================
     scores = []
     for ideal in ideal_vectors:
-        # 12問中一致している項目の割合
         match = 0
         for i in range(12):
-            # 週数回や週1〜2回は0.5なので近い方に0.5点
             if abs(user_vector[i] - ideal[i]) == 0:
                 match += 1
-            elif user_vector[i] == 0.5 and ideal[i] == 1:
+            elif user_vector[i] == 0.5 and (ideal[i] == 1 or ideal[i] == 0):
                 match += 0.5
-            elif user_vector[i] == 0.5 and ideal[i] == 0:
-                match += 0.5
-        percent = (match/12)*100
+        percent = (match / 12) * 100
         scores.append(percent)
 
     # =========================
@@ -101,7 +105,5 @@ if st.button("診断する！"):
     for t, s in zip(types, scores):
         st.write(f"**{t}度：{s:.1f}%**")
 
-    # 代表タイプ
     max_idx = scores.index(max(scores))
     st.success(f"あなたの代表タイプは **{types[max_idx]}** です！")
-
