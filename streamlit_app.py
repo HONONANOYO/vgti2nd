@@ -1,8 +1,8 @@
 import streamlit as st
 
-st.set_page_config(page_title="ベジタイプ16診断", page_icon="🥦")
+st.set_page_config(page_title="ベジタイプ16診断　2nd", page_icon="🥦")
 
-st.title("ベジタイプ16診断（12問版）")
+st.title("ベジタイプ16診断 2nd（12問版）")
 
 # =========================
 # 12問の質問
@@ -107,7 +107,7 @@ if st.button("診断する！"):
 
     max_idx = scores.index(max(scores))
     st.success(f"あなたの代表タイプは **{types[max_idx]}** です！")
-    st.markdown(
+    st.subheader(
     "アンケートご回答お願いします！： [アンケート](https://docs.google.com/forms/d/e/1FAIpQLSfMbMGtTDsTk-f8VTxYseqijcZDyrIfZKyf9e-ryCThoHxVag/viewform)",
     unsafe_allow_html=True
 )
