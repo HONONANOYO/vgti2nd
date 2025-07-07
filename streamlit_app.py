@@ -107,3 +107,8 @@ if st.button("診断する！"):
 
     max_idx = scores.index(max(scores))
     st.success(f"あなたの代表タイプは **{types[max_idx]}** です！")
+    st.markdown(
+    "アンケートご回答お願いします！： [アンケート](https://docs.google.com/forms/d/e/1FAIpQLSfMbMGtTDsTk-f8VTxYseqijcZDyrIfZKyf9e-ryCThoHxVag/viewform)",
+    unsafe_allow_html=True
+)
+
