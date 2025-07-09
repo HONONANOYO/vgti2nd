@@ -115,7 +115,7 @@ elif st.session_state.page == "result":
     with col1:
         image_file = f"{result_type.lower()}.png"
         try:
-            st.image(image_file, caption=f"{result_type} タイプ", use_column_width=True)
+            st.image(image_file, caption=f"{result_type} タイプ", use_container_width=True)
         except:
             st.warning("画像が見つかりませんでした。")
 
