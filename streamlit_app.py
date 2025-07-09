@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-st.set_page_config(page_title="ベジタイプ16診断", page_icon="🥦")
+st.set_page_config(page_title="VGTI診断　２nd", page_icon="🍅🍅")
 
 # 初期状態の設定
 if "page" not in st.session_state:
@@ -25,8 +25,8 @@ questions = [
     {"q": "野菜を食べても満足感が得られないと感じますか？（※野菜よりおなかにたまりやすい食事を選んでしまう）", "options": ["はい", "いいえ"]},
     # L/D
     {"q": "1日1回以上野菜を食べていますか？", "options": ["はい", "いいえ"]},
-    {"q": "野菜は健康にいいから食べている", "options": ["はい", "いいえ"]},
-    {"q": "野菜が好き", "options": ["はい", "いいえ"]},
+    {"q": "野菜は健康にいいから食べていますか？", "options": ["はい", "いいえ"]},
+    {"q": "野菜は好きですか？", "options": ["はい", "いいえ"]},
     {"q": "野菜を食べると気分や体調がよくなると感じますか？", "options": ["はい", "いいえ"]},
 ]
 
