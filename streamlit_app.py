@@ -81,15 +81,21 @@ if st.session_state.page == "question":
             [0,0,0,0,0,0,0,0,0,0,0,0],
         ]
 
+        # 重みづけ（Q1, Q4, Q7, Q12 を重視）
+        weights = [2.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0]
+
         scores = []
         for ideal in ideal_vectors:
-            match = 0
+            score = 0
+            total_weight = 0
             for i in range(12):
+                weight = weights[i]
+                total_weight += weight
                 if abs(user_vector[i] - ideal[i]) == 0:
-                    match += 1
+                    score += weight
                 elif user_vector[i] == 0.5:
-                    match += 0.5
-            scores.append((match / 12) * 100)
+                    score += 0.5 * weight
+            scores.append((score / total_weight) * 100)
 
         max_idx = scores.index(max(scores))
         st.session_state.result_type = types[max_idx]
@@ -123,7 +129,7 @@ elif st.session_state.page == "result":
         st.subheader("全タイプとの一致スコア")
         df = pd.DataFrame({
             "タイプ": types,
-            "一致度（%）": [round(s, 1) for s in scores]
+            "一致度（%）": [round(s, 2) for s in scores]
         }).sort_values(by="一致度（%）", ascending=False)
         st.dataframe(df.reset_index(drop=True), use_container_width=True)
 
