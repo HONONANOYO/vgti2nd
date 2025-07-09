@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(page_title="ベジタイプ16診断　2nd", page_icon="🥦")
 
@@ -29,7 +30,7 @@ if st.session_state.page == "question":
         {"q": "野菜は好きですか？", "options": ["Like", "Dislike"]},
     ]
 
-    # 回答
+    # 回答収集
     user_answers = []
     for i, q in enumerate(questions):
         answer = st.radio(q["q"], q["options"], key=f"q{i}")
@@ -48,7 +49,7 @@ if st.session_state.page == "question":
 
         user_vector = []
         for i, a in enumerate(user_answers):
-            if i == 6 or i == 7:  # 障壁・価格
+            if i == 6 or i == 7:  # 障壁・価格はYesなら0（障壁あり）、Noなら1
                 user_vector.append(0 if a == "Yes" else 1)
             else:
                 user_vector.append(answer_map[a])
@@ -92,6 +93,8 @@ if st.session_state.page == "question":
 
         max_idx = scores.index(max(scores))
         st.session_state.result_type = types[max_idx]
+        st.session_state.scores = scores
+        st.session_state.types = types
         st.session_state.page = "result"
         st.rerun()
 
@@ -100,17 +103,30 @@ if st.session_state.page == "question":
 # =========================
 elif st.session_state.page == "result":
     result_type = st.session_state.result_type
+    scores = st.session_state.scores
+    types = st.session_state.types
+
     st.header("あなたの代表タイプは？")
     st.subheader(f"**{result_type} タイプ**")
 
-    # 画像表示（ルート直下にファイルがある前提）
-    image_file = f"{result_type.lower()}.png"
-    try:
-        st.image(image_file, caption=f"{result_type} タイプ", use_column_width=True)
-    except:
-        st.warning("画像が見つかりませんでした。")
+    # 左右に分割（左：画像、右：表）
+    col1, col2 = st.columns([1, 2])
 
-    st.subheader("診断結果スコアは非表示にしました")
+    with col1:
+        image_file = f"{result_type.lower()}.png"
+        try:
+            st.image(image_file, caption=f"{result_type} タイプ", use_column_width=True)
+        except:
+            st.warning("画像が見つかりませんでした。")
+
+    with col2:
+        st.subheader("全タイプとの一致スコア")
+        df = pd.DataFrame({
+            "タイプ": types,
+            "一致度（%）": [round(s, 1) for s in scores]
+        }).sort_values(by="一致度（%）", ascending=False)
+        st.dataframe(df.reset_index(drop=True), use_container_width=True)
+
     st.markdown(
         "アンケートご協力お願いします！： [アンケートフォーム](https://docs.google.com/forms/d/e/1FAIpQLSfMbMGtTDsTk-f8VTxYseqijcZDyrIfZKyf9e-ryCThoHxVag/viewform)",
         unsafe_allow_html=True
