@@ -1,126 +1,94 @@
 import streamlit as st
 import pandas as pd
-import math
+import numpy as np
 
-st.set_page_config(page_title="ベジタイプ16診断　2nd", page_icon="🥦")
+st.set_page_config(page_title="ベジタイプ16診断", page_icon="🥦")
 
+# 初期状態の設定
 if "page" not in st.session_state:
     st.session_state.page = "question"
 
-st.title("ベジタイプ16診断 2nd（12問版）")
+st.title("ベジタイプ16診断")
 
-# =========================
-# 質問ページ
-# =========================
+# 質問と選択肢の定義
+questions = [
+    # R/I
+    {"q": "1日3食食べていますか？", "options": ["はい", "いいえ"]},
+    {"q": "食事の時間は一定ですか？", "options": ["はい", "いいえ"]},
+    {"q": "朝食を週にどのくらい食べますか？", "options": ["毎日", "週数回", "ほとんど食べない"]},
+    # H/E
+    {"q": "週3回以上外食していますか？", "options": ["はい", "いいえ"]},
+    {"q": "あなたが野菜を摂る機会が多いのはどこですか？", "options": ["家", "外食", "ほとんど食べない"]},
+    # F/B
+    {"q": "野菜の価格が高いと感じますか？", "options": ["はい", "いいえ"]},
+    {"q": "野菜を毎日食べるのは難しいと感じますか？", "options": ["はい", "いいえ"]},
+    {"q": "野菜を食べても満足感が得られないと感じますか？（※野菜よりおなかにたまりやすい食事を選んでしまう）", "options": ["はい", "いいえ"]},
+    # L/D
+    {"q": "1日1回以上野菜を食べていますか？", "options": ["はい", "いいえ"]},
+    {"q": "野菜は健康にいいから食べている", "options": ["はい", "いいえ"]},
+    {"q": "野菜が好き", "options": ["はい", "いいえ"]},
+    {"q": "野菜を食べると気分や体調がよくなると感じますか？", "options": ["はい", "いいえ"]},
+]
+
+# 回答ページ
 if st.session_state.page == "question":
-
-    questions = [
-        {"q": "1日3食食べていますか？", "options": ["毎日３食", "２食以下になることが多い"]},
-        {"q": "食事の時間は一定ですか？", "options": ["Yes", "No"]},
-        {"q": "朝食を週にどのくらい食べますか？", "options": ["毎日", "週数回", "ほとんど食べない"]},
-        {"q": "どこで食べることが多いですか？", "options": ["家", "外食"]},
-        {"q": "外食のとき野菜を選びますか？", "options": ["Yes", "No"]},
-        {"q": "外食の頻度は？", "options": ["週0回", "週1〜2回", "週3回以上"]},
-        {"q": "野菜を毎日食べるのは難しいと感じますか？", "options": ["Yes", "No"]},
-        {"q": "野菜の価格が高いと感じますか？", "options": ["Yes", "No"]},
-        {"q": "野菜よりも満足感のある食べ物を優先してしまいがちですか？", "options": ["Yes", "No"]},
-        {"q": "野菜を意識して食べていますか？", "options": ["Yes", "No"]},
-        {"q": "野菜は健康に必要だと思いますか？", "options": ["Yes", "No"]},
-        {"q": "野菜は好きですか？", "options": ["Like", "Dislike"]},
-    ]
-
-    user_answers = []
-    for i, q in enumerate(questions):
-        answer = st.radio(q["q"], q["options"], key=f"q{i}")
-        user_answers.append(answer)
+    answers = []
+    for i, item in enumerate(questions):
+        a = st.radio(item["q"], item["options"], key=f"q{i}")
+        answers.append(a)
 
     if st.button("診断する！"):
-        answer_map = {
-            "毎日３食": 1, "２食以下になることが多い": 0,
-            "Yes": 1, "No": 0,
-            "毎日": 1, "週数回": 0.5, "ほとんど食べない": 0,
-            "家": 1, "外食": 0,
-            "週0回": 1, "週1〜2回": 0.5, "週3回以上": 0,
-            "Like": 1, "Dislike": 0,
-        }
-
-        user_vector = []
-        for i, a in enumerate(user_answers):
-            if i in [6, 7, 8]:  # Q7〜Q9（障壁系）：Yes→0, No→1
-                user_vector.append(0 if a == "Yes" else 1)
+        score_vector = []
+        for i, ans in enumerate(answers):
+            if i == 2:  # 朝食頻度
+                score_vector.append({"毎日": 1, "週数回": 0.5, "ほとんど食べない": 0}[ans])
+            elif i == 4:  # 野菜を摂る場所
+                score_vector.append({"家": 1, "外食": 0.5, "ほとんど食べない": 0}[ans])
             else:
-                user_vector.append(answer_map[a])
+                score_vector.append(1 if ans == "はい" else 0)
 
-        types = [
-            "RHFL", "RHFD", "RHBL", "RHBD",
-            "REFL", "REFD", "REBL", "REBD",
-            "IHFL", "IHFD", "IHBL", "IHBD",
-            "IEFL", "IEFD", "IEBL", "IEBD"
-        ]
+        # 全16タイプと理想ベクトル
+        ideal_vectors, types = [], []
+        for r in "RI":
+            for h in "HE":
+                for f in "FB":
+                    for l in "LD":
+                        types.append(r + h + f + l)
+                        vec = []
+                        vec += [1,1,1] if r=="R" else [0,0,0]
+                        vec += [1,1] if h=="H" else [0,0]
+                        vec += [1,1,1] if f=="F" else [0,0,0]
+                        vec += [1,1,1,1] if l=="L" else [0,0,0,0]
+                        ideal_vectors.append(vec)
 
-        ideal_vectors = [
-            [1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,1,1,1,1,1,1,1,1,0,0,0],
-            [1,1,1,1,1,1,0,0,0,1,1,1],
-            [1,1,1,1,1,1,0,0,0,0,0,0],
-            [1,1,1,0,0,0,1,1,1,1,1,1],
-            [1,1,1,0,0,0,1,1,1,0,0,0],
-            [1,1,1,0,0,0,0,0,0,1,1,1],
-            [1,1,1,0,0,0,0,0,0,0,0,0],
-            [0,0,0,1,1,1,1,1,1,1,1,1],
-            [0,0,0,1,1,1,1,1,1,0,0,0],
-            [0,0,0,1,1,1,0,0,0,1,1,1],
-            [0,0,0,1,1,1,0,0,0,0,0,0],
-            [0,0,0,0,0,0,1,1,1,1,1,1],
-            [0,0,0,0,0,0,1,1,1,0,0,0],
-            [0,0,0,0,0,0,0,0,0,1,1,1],
-            [0,0,0,0,0,0,0,0,0,0,0,0],
-        ]
-
-        max_distance = math.sqrt(12)
+        # 距離ベーススコア計算
         scores = []
         for ideal in ideal_vectors:
-            dist = sum((user_vector[i] - ideal[i]) ** 2 for i in range(12))
-            dist = math.sqrt(dist)
-            score = 100 - (dist / max_distance) * 100
-            scores.append(round(score, 2))
+            dist = np.linalg.norm(np.array(score_vector) - np.array(ideal))
+            similarity = (1 - dist / np.sqrt(len(ideal))) * 100
+            scores.append(similarity)
 
-        max_idx = scores.index(max(scores))
-        st.session_state.result_type = types[max_idx]
-        st.session_state.scores = scores
-        st.session_state.types = types
+        st.session_state.result_type = types[np.argmax(scores)]
+        st.session_state.result_scores = list(zip(types, scores))
         st.session_state.page = "result"
-        st.rerun()
+        st.experimental_rerun()
 
-# =========================
 # 結果ページ
-# =========================
 elif st.session_state.page == "result":
-    result_type = st.session_state.result_type
-    scores = st.session_state.scores
-    types = st.session_state.types
-
-    st.header("あなたの代表タイプは？")
-    st.subheader(f"**{result_type} タイプ**")
+    t = st.session_state.result_type
+    st.header(f"{t} タイプ")
 
     col1, col2 = st.columns([1, 2])
-
     with col1:
-        image_file = f"{result_type.lower()}.png"
         try:
-            st.image(image_file, caption=f"{result_type} タイプ", use_container_width=True)
+            st.image(f"{t.lower()}.png", caption=f"{t} タイプ", use_container_width=True)
         except:
-            st.warning("画像が見つかりませんでした。")
+            st.warning("画像が見つかりませんでした")
 
     with col2:
         st.subheader("全タイプとの一致スコア")
-        df = pd.DataFrame({
-            "タイプ": types,
-            "一致度（%）": scores
-        }).sort_values(by="一致度（%）", ascending=False)
-        st.dataframe(df.reset_index(drop=True), use_container_width=True)
+        df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
+        st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
-    st.markdown(
-        "アンケートご協力お願いします！： [アンケートフォーム](https://docs.google.com/forms/d/e/1FAIpQLSfMbMGtTDsTk-f8VTxYseqijcZDyrIfZKyf9e-ryCThoHxVag/viewform)",
-        unsafe_allow_html=True
-    )
+    st.markdown("---")
+    st.markdown("アンケートご協力お願いします！ [アンケートフォーム](https://docs.google.com/forms/d/e/1FAIpQLSfMbMGtTDsTk-f8VTxYseqijcZDyrIfZKyf9e-ryCThoHxVag/viewform)")
