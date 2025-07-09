@@ -71,7 +71,7 @@ if st.session_state.page == "question":
         st.session_state.result_type = types[np.argmax(scores)]
         st.session_state.result_scores = list(zip(types, scores))
         st.session_state.page = "result"
-        st.experimental_rerun()
+        st.rerun()
 
 # 結果ページ
 elif st.session_state.page == "result":
