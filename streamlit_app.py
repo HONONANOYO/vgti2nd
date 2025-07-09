@@ -93,7 +93,7 @@ if st.session_state.page == "question":
         max_idx = scores.index(max(scores))
         st.session_state.result_type = types[max_idx]
         st.session_state.page = "result"
-        st.experimental_rerun()
+        st.rerun()
 
 # =========================
 # ページ2：診断結果ページ
