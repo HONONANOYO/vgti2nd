@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(page_title="VGTI診断　２nd", page_icon="🍅🍅")
-st.write("これは最新版です！！")
+st.write("これは最新版です")
 
 # 初期状態の設定
 if "page" not in st.session_state:
@@ -41,7 +41,7 @@ if st.session_state.page == "question":
         a = st.radio(item["q"], item["options"], key=f"q{i}")
         answers.append(a)
 
-    if st.button("診断する！"):
+    if st.button("診断する！", key="start_button"):
         score_vector = []
         for i, ans in enumerate(answers):
             if i == 2:  # 朝食頻度（R/I）
@@ -96,19 +96,14 @@ elif st.session_state.page == "result":
         df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
         st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
-
+    # PDFから変換した画像を表示（例として1枚表示）
     st.subheader("全体像はこちらです。")
     try:
-        st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
+        st.image("vgti_map_page1.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
     except:
         st.warning("全体マップ画像が見つかりませんでした")
 
     st.markdown("---")
-    if st.button("もう一度診断する"):
-        st.session_state.page = "question"
-        st.rerun()
-
-    st.markdown("---")
-    if st.button("もう一度診断する"):
+    if st.button("もう一度診断する", key="retry_button"):
         st.session_state.page = "question"
         st.rerun()
