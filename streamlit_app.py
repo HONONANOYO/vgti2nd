@@ -100,7 +100,7 @@ elif st.session_state.page == "result":
 
     st.subheader("全体像はこちらです。")
     try:
-        st.image("vgti_map_page1.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
+        st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
     except:
         st.warning("全体マップ画像が見つかりませんでした")
 
