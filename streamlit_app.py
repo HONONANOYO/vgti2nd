@@ -6,7 +6,7 @@ st.set_page_config(page_title="VGTI診断　２nd", page_icon="🍅🍅")
 st.write("これは最新版です")
 
 # URLクエリパラメータからpage情報を取得
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 if "page" not in st.session_state:
     st.session_state.page = query_params.get("page", ["question"])[0]
 
@@ -77,9 +77,9 @@ if st.session_state.page == "question":
         st.session_state.result_scores = percentage_scores
 
         # クエリパラメータでスクロールをリセット
-        st.experimental_set_query_params(page="result")
+        st.query_params.update({"page": "result"})
         st.session_state.page = "result"
-        st.experimental_rerun()
+        st.rerun()
 
 # 結果ページ
 elif st.session_state.page == "result":
@@ -106,6 +106,6 @@ elif st.session_state.page == "result":
 
     st.markdown("---")
     if st.button("もう一度診断する", key="retry_button"):
-        st.experimental_set_query_params(page="question")
+        st.query_params.update({"page": "question"})
         st.session_state.page = "question"
-        st.experimental_rerun()
+        st.rerun()
