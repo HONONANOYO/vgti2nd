@@ -24,7 +24,7 @@ questions = [
 
     # F/B
     {"q": "野菜の価格が高いと感じますか？", "options": ["はい", "いいえ"]},
-    {"q": "毎日野菜を食べていますか？", "options": ["はい", "いいえ"]},
+    {"q": "野菜を毎食食べることは難しいと感じますか？", "options": ["はい", "いいえ"]},  # YES=0, NO=1
     {"q": "野菜を食べても満足感が得られないと感じますか？（※野菜よりおなかにたまりやすい食事を選んでしまう）", "options": ["はい", "いいえ"]},
 
     # L/D
@@ -46,7 +46,9 @@ if st.session_state.page == "question":
         for i, ans in enumerate(answers):
             if i == 2:  # 朝食頻度（R/I）
                 score_vector.append({"毎日": 1, "週数回": 0.5, "ほとんど食べない": 0}[ans])
-            elif i == 4:  # H/E（外食頻度のみ）
+            elif i == 4:  # H/E（外食頻度）
+                score_vector.append(0 if ans == "はい" else 1)
+            elif i == 6:  # 毎食野菜は難しい（F/B）←反転処理
                 score_vector.append(0 if ans == "はい" else 1)
             else:
                 score_vector.append(1 if ans == "はい" else 0)
@@ -65,7 +67,7 @@ if st.session_state.page == "question":
                         vec += [1,1,1,1] if l=="L" else [0,0,0,0]       # L/D（4問）
                         ideal_vectors.append(vec)
 
-        # スコア計算（パーセンテージに変換）
+        # スコア計算（ペナルティ付き）→ % に変換
         scores = []
         for ideal in ideal_vectors:
             match = sum([1 if a == b else 0 for a, b in zip(score_vector, ideal)])
@@ -96,7 +98,7 @@ elif st.session_state.page == "result":
         df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
         st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
-    # PDFから変換した画像を表示（例として1枚表示）
+    # 全体マップ画像（任意）
     st.subheader("↓全体像はこちらです。")
     try:
         st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
