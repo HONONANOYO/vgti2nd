@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(page_title="VGTI診断　２nd", page_icon="🍅🍅")
-st.write("これは最新版です")
+st.write("これは最新版です！より詳しく診断します👀")
 
 # 初期状態の設定
 if "page" not in st.session_state:
@@ -24,7 +24,7 @@ questions = [
 
     # F/B
     {"q": "野菜の価格が高いと感じますか？", "options": ["はい", "いいえ"]},
-    {"q": "野菜を毎食食べることは難しいと感じますか？", "options": ["はい", "いいえ"]},  # YES=0, NO=1
+    {"q": "野菜を毎食食べることは難しいと感じますか？", "options": ["はい", "いいえ"]},
     {"q": "野菜を食べても満足感が得られないと感じますか？（※野菜よりおなかにたまりやすい食事を選んでしまう）", "options": ["はい", "いいえ"]},
 
     # L/D
@@ -48,7 +48,7 @@ if st.session_state.page == "question":
                 score_vector.append({"毎日": 1, "週数回": 0.5, "ほとんど食べない": 0}[ans])
             elif i == 4:  # H/E（外食頻度）
                 score_vector.append(0 if ans == "はい" else 1)
-            elif i == 6:  # 毎食野菜は難しい（F/B）←反転処理
+            elif i in [5, 6, 7]:  # F/B（すべて YES = 0）
                 score_vector.append(0 if ans == "はい" else 1)
             else:
                 score_vector.append(1 if ans == "はい" else 0)
@@ -98,7 +98,6 @@ elif st.session_state.page == "result":
         df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
         st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
-    # 全体マップ画像（任意）
     st.subheader("↓全体像はこちらです。")
     try:
         st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
@@ -106,6 +105,6 @@ elif st.session_state.page == "result":
         st.warning("全体マップ画像が見つかりませんでした")
 
     st.markdown("---")
-    if st.button("もう一度診断する", key="retry_button"):
+    if st.button("もう一度ベジる", key="retry_button"):
         st.session_state.page = "question"
         st.rerun()
