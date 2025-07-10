@@ -91,4 +91,4 @@ elif st.session_state.page == "result":
         st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
     st.markdown("---")
-    st.markdown("アンケートご協力お願いします！ [アンケートフォーム](https://docs.google.com/forms/d/e/1FAIpQLSfMbMGtTDsTk-f8VTxYseqijcZDyrIfZKyf9e-ryCThoHxVag/viewform)")
+   
