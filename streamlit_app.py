@@ -65,7 +65,7 @@ if st.session_state.page == "question":
                         vec += [1,1,1,1] if l=="L" else [0,0,0,0]       # L/D（4問）
                         ideal_vectors.append(vec)
 
-        # スコア計算（同率回避のため0.01刻みでペナルティ）
+        # スコア計算（パーセンテージに変換）
         scores = []
         for ideal in ideal_vectors:
             match = sum([1 if a == b else 0 for a, b in zip(score_vector, ideal)])
@@ -73,8 +73,9 @@ if st.session_state.page == "question":
             similarity = match - (mismatch_count * 0.01)
             scores.append(similarity)
 
+        percentage_scores = [(t, round((s / 12) * 100, 1)) for t, s in zip(types, scores)]
         st.session_state.result_type = types[np.argmax(scores)]
-        st.session_state.result_scores = list(zip(types, scores))
+        st.session_state.result_scores = percentage_scores
         st.session_state.page = "result"
         st.rerun()
 
@@ -91,9 +92,9 @@ elif st.session_state.page == "result":
             st.warning("画像が見つかりませんでした")
 
     with col2:
-        st.subheader("全タイプとの一致スコア")
-        df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（スコア）"])
-        st.dataframe(df.sort_values(by="一致度（スコア）", ascending=False).reset_index(drop=True))
+        st.subheader("全タイプとの一致スコア（%）")
+        df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
+        st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
     st.markdown("---")
     if st.button("もう一度診断する"):
