@@ -3,11 +3,12 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(page_title="VGTI診断　２nd", page_icon="🍅🍅")
-st.write("これは最新版です！より詳しくみてみましょう👀")
+st.write("これは最新版です")
 
-# 初期状態の設定
+# URLクエリパラメータからpage情報を取得
+query_params = st.experimental_get_query_params()
 if "page" not in st.session_state:
-    st.session_state.page = "question"
+    st.session_state.page = query_params.get("page", ["question"])[0]
 
 st.title("ベジタイプ16診断")
 
@@ -44,14 +45,13 @@ if st.session_state.page == "question":
     if st.button("診断する！", key="start_button"):
         score_vector = []
         for i, ans in enumerate(answers):
-            if i == 2:  # 朝食頻度（R/I）
+            if i == 2:
                 score_vector.append({"毎日": 1, "週数回": 0.5, "ほとんど食べない": 0}[ans])
-            elif i == 4:  # H/E（外食頻度のみ）
+            elif i == 4:
                 score_vector.append(0 if ans == "はい" else 1)
             else:
                 score_vector.append(1 if ans == "はい" else 0)
 
-        # 全16タイプの理想ベクトルを作成
         ideal_vectors, types = [], []
         for r in "RI":
             for h in "HE":
@@ -59,13 +59,12 @@ if st.session_state.page == "question":
                     for l in "LD":
                         types.append(r + h + f + l)
                         vec = []
-                        vec += [1,1,1,1] if r=="R" else [0,0,0,0]       # R/I（4問）
-                        vec += [1] if h=="H" else [0]                   # H/E（1問）
-                        vec += [1,1,1] if f=="F" else [0,0,0]           # F/B（3問）
-                        vec += [1,1,1,1] if l=="L" else [0,0,0,0]       # L/D（4問）
+                        vec += [1,1,1,1] if r=="R" else [0,0,0,0]
+                        vec += [1] if h=="H" else [0]
+                        vec += [1,1,1] if f=="F" else [0,0,0]
+                        vec += [1,1,1,1] if l=="L" else [0,0,0,0]
                         ideal_vectors.append(vec)
 
-        # スコア計算（パーセンテージに変換）
         scores = []
         for ideal in ideal_vectors:
             match = sum([1 if a == b else 0 for a, b in zip(score_vector, ideal)])
@@ -77,15 +76,10 @@ if st.session_state.page == "question":
         st.session_state.result_type = types[np.argmax(scores)]
         st.session_state.result_scores = percentage_scores
 
-        # 🔽 スクロール最上部へ戻すスクリプト
-        st.markdown("""
-            <script>
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-        """, unsafe_allow_html=True)
-
+        # クエリパラメータでスクロールをリセット
+        st.experimental_set_query_params(page="result")
         st.session_state.page = "result"
-        st.rerun()
+        st.experimental_rerun()
 
 # 結果ページ
 elif st.session_state.page == "result":
@@ -106,18 +100,12 @@ elif st.session_state.page == "result":
 
     st.subheader("全体像はこちらです。")
     try:
-        st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
+        st.image("vgti_map_page1.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
     except:
         st.warning("全体マップ画像が見つかりませんでした")
 
     st.markdown("---")
     if st.button("もう一度診断する", key="retry_button"):
-        # 🔽 スクロール最上部へ戻すスクリプト
-        st.markdown("""
-            <script>
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            </script>
-        """, unsafe_allow_html=True)
-
+        st.experimental_set_query_params(page="question")
         st.session_state.page = "question"
-        st.rerun()
+        st.experimental_rerun()
