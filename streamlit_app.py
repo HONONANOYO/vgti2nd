@@ -96,6 +96,18 @@ elif st.session_state.page == "result":
         df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
         st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
+
+    st.subheader("全体像はこちらです。")
+    try:
+        st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
+    except:
+        st.warning("全体マップ画像が見つかりませんでした")
+
+    st.markdown("---")
+    if st.button("もう一度診断する"):
+        st.session_state.page = "question"
+        st.rerun()
+
     st.markdown("---")
     if st.button("もう一度診断する"):
         st.session_state.page = "question"
