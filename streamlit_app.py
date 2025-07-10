@@ -97,7 +97,7 @@ elif st.session_state.page == "result":
         st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
     # PDFから変換した画像を表示（例として1枚表示）
-    st.subheader("↓全体像はこちらです。↑あなたのベジタイプです。")
+    st.subheader("↓全体像はこちらです。")
     try:
         st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
     except:
