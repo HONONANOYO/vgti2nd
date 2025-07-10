@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(page_title="VGTI診断　２nd", page_icon="🍅🍅")
-st.write("これは最新版です")
+st.write("これは最新版です！！")
 
 # 初期状態の設定
 if "page" not in st.session_state:
