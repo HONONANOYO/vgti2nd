@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(page_title="VGTI診断　２nd", page_icon="🍅🍅")
-st.write("これは最新版です")
+st.write("これは最新版です！より詳しく見てみましょう👀")
 
 # URLクエリパラメータからpage情報を取得
 query_params = st.query_params
