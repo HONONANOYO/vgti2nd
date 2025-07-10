@@ -42,12 +42,12 @@ if st.session_state.page == "question":
         for i, ans in enumerate(answers):
             if i == 2:  # 朝食頻度
                 score_vector.append({"毎日": 1, "週数回": 0.5, "ほとんど食べない": 0}[ans])
-            elif i == 4:  # 野菜を摂る場所
-                score_vector.append({"家": 1, "外食": 0.5, "ほとんど食べない": 0}[ans])
+            elif i == 4:  # 野菜を摂る場所（H/E軸用に修正）
+                score_vector.append({"家": 1, "外食": 0, "ほとんど食べない": 0}[ans])
             else:
                 score_vector.append(1 if ans == "はい" else 0)
 
-        # 全16タイプと理想ベクトル
+        # 全16タイプと理想ベクトルの定義
         ideal_vectors, types = [], []
         for r in "RI":
             for h in "HE":
@@ -61,11 +61,12 @@ if st.session_state.page == "question":
                         vec += [1,1,1,1] if l=="L" else [0,0,0,0]
                         ideal_vectors.append(vec)
 
-        # 距離ベーススコア計算
+        # 一致数ベース＋差分0.01刻みでスコア計算
         scores = []
         for ideal in ideal_vectors:
-            dist = np.linalg.norm(np.array(score_vector) - np.array(ideal))
-            similarity = (1 - dist / np.sqrt(len(ideal))) * 100
+            match = sum([1 if a == b else 0 for a, b in zip(score_vector, ideal)])
+            mismatch_count = sum([1 for a, b in zip(score_vector, ideal) if a != b])
+            similarity = match - (mismatch_count * 0.01)
             scores.append(similarity)
 
         st.session_state.result_type = types[np.argmax(scores)]
@@ -87,8 +88,10 @@ elif st.session_state.page == "result":
 
     with col2:
         st.subheader("全タイプとの一致スコア")
-        df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
-        st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
+        df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（スコア）"])
+        st.dataframe(df.sort_values(by="一致度（スコア）", ascending=False).reset_index(drop=True))
 
     st.markdown("---")
-   
+    if st.button("もう一度診断する"):
+        st.session_state.page = "question"
+        st.rerun()
