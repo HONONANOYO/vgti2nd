@@ -10,22 +10,25 @@ if "page" not in st.session_state:
 
 st.title("ベジタイプ16診断")
 
-# 質問と選択肢の定義
+# 質問と選択肢の定義（最新版 12問）
 questions = [
     # R/I
     {"q": "1日3食食べていますか？", "options": ["はい", "いいえ"]},
     {"q": "食事の時間は一定ですか？", "options": ["はい", "いいえ"]},
     {"q": "朝食を週にどのくらい食べますか？", "options": ["毎日", "週数回", "ほとんど食べない"]},
-    # H/E
+    {"q": "1日1回以上野菜を食べていますか？", "options": ["はい", "いいえ"]},
+
+    # H/E（1問のみ）
     {"q": "週3回以上外食していますか？", "options": ["はい", "いいえ"]},
-    {"q": "あなたが野菜を摂る機会が多いのはどこですか？", "options": ["家", "外食", "ほとんど食べない"]},
+
     # F/B
     {"q": "野菜の価格が高いと感じますか？", "options": ["はい", "いいえ"]},
-    {"q": "野菜を毎日食べるのは難しいと感じますか？", "options": ["はい", "いいえ"]},
+    {"q": "毎日野菜を食べていますか？", "options": ["はい", "いいえ"]},
     {"q": "野菜を食べても満足感が得られないと感じますか？（※野菜よりおなかにたまりやすい食事を選んでしまう）", "options": ["はい", "いいえ"]},
+
     # L/D
-    {"q": "1日1回以上野菜を食べていますか？", "options": ["はい", "いいえ"]},
-    {"q": "野菜は健康にいいから食べていますか？", "options": ["はい", "いいえ"]},
+    {"q": "意識的に野菜を摂取していますか？", "options": ["はい", "いいえ"]},
+    {"q": "健康のために野菜を食べることはありますか？", "options": ["はい", "いいえ"]},
     {"q": "野菜は好きですか？", "options": ["はい", "いいえ"]},
     {"q": "野菜を食べると気分や体調がよくなると感じますか？", "options": ["はい", "いいえ"]},
 ]
@@ -40,14 +43,14 @@ if st.session_state.page == "question":
     if st.button("診断する！"):
         score_vector = []
         for i, ans in enumerate(answers):
-            if i == 2:  # 朝食頻度
+            if i == 2:  # 朝食頻度（R/I）
                 score_vector.append({"毎日": 1, "週数回": 0.5, "ほとんど食べない": 0}[ans])
-            elif i == 4:  # 野菜を摂る場所（H/E軸用に修正）
-                score_vector.append({"家": 1, "外食": 0, "ほとんど食べない": 0}[ans])
+            elif i == 4:  # H/E（外食頻度のみ）
+                score_vector.append(0 if ans == "はい" else 1)
             else:
                 score_vector.append(1 if ans == "はい" else 0)
 
-        # 全16タイプと理想ベクトルの定義
+        # 全16タイプの理想ベクトルを作成
         ideal_vectors, types = [], []
         for r in "RI":
             for h in "HE":
@@ -55,13 +58,13 @@ if st.session_state.page == "question":
                     for l in "LD":
                         types.append(r + h + f + l)
                         vec = []
-                        vec += [1,1,1] if r=="R" else [0,0,0]
-                        vec += [1,1] if h=="H" else [0,0]
-                        vec += [1,1,1] if f=="F" else [0,0,0]
-                        vec += [1,1,1,1] if l=="L" else [0,0,0,0]
+                        vec += [1,1,1,1] if r=="R" else [0,0,0,0]       # R/I（4問）
+                        vec += [1] if h=="H" else [0]                   # H/E（1問）
+                        vec += [1,1,1] if f=="F" else [0,0,0]           # F/B（3問）
+                        vec += [1,1,1,1] if l=="L" else [0,0,0,0]       # L/D（4問）
                         ideal_vectors.append(vec)
 
-        # 一致数ベース＋差分0.01刻みでスコア計算
+        # スコア計算（同率回避のため0.01刻みでペナルティ）
         scores = []
         for ideal in ideal_vectors:
             match = sum([1 if a == b else 0 for a, b in zip(score_vector, ideal)])
