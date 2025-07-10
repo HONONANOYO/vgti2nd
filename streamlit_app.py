@@ -76,6 +76,14 @@ if st.session_state.page == "question":
         percentage_scores = [(t, round((s / 12) * 100, 1)) for t, s in zip(types, scores)]
         st.session_state.result_type = types[np.argmax(scores)]
         st.session_state.result_scores = percentage_scores
+
+        # 🔽 スクロール最上部へ戻すスクリプト
+        st.markdown("""
+            <script>
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            </script>
+        """, unsafe_allow_html=True)
+
         st.session_state.page = "result"
         st.rerun()
 
@@ -96,14 +104,20 @@ elif st.session_state.page == "result":
         df = pd.DataFrame(st.session_state.result_scores, columns=["タイプ", "一致度（%）"])
         st.dataframe(df.sort_values(by="一致度（%）", ascending=False).reset_index(drop=True))
 
-    # PDFから変換した画像を表示（例として1枚表示）
     st.subheader("全体像はこちらです。")
     try:
-        st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
+        st.image("vgti_map_page1.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
     except:
         st.warning("全体マップ画像が見つかりませんでした")
 
     st.markdown("---")
-    if st.button("もう一度ベジる🍅", key="retry_button"):
+    if st.button("もう一度診断する", key="retry_button"):
+        # 🔽 スクロール最上部へ戻すスクリプト
+        st.markdown("""
+            <script>
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            </script>
+        """, unsafe_allow_html=True)
+
         st.session_state.page = "question"
         st.rerun()
