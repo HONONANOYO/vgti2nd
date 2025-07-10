@@ -99,11 +99,11 @@ elif st.session_state.page == "result":
     # PDFから変換した画像を表示（例として1枚表示）
     st.subheader("全体像はこちらです。")
     try:
-        st.image("vgti_map_page1.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
+        st.image("vgti_map.png", caption="ベジタイプ16 全体マップ", use_container_width=True)
     except:
         st.warning("全体マップ画像が見つかりませんでした")
 
     st.markdown("---")
-    if st.button("もう一度診断する", key="retry_button"):
+    if st.button("もう一度ベジる🍅", key="retry_button"):
         st.session_state.page = "question"
         st.rerun()
