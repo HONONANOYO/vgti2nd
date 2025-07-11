@@ -9,7 +9,7 @@ st.write("これは最新版です！より詳しく診断します👀")
 if "page" not in st.session_state:
     st.session_state.page = "question"
 
-st.title("ベジタイプ16診断　２nd")
+st.title("ベジタイプ16診断")
 
 # 質問と選択肢の定義（最新版 12問）
 questions = [
@@ -46,7 +46,7 @@ if st.session_state.page == "question":
         for i, ans in enumerate(answers):
             if i == 2:  # 朝食頻度（R/I）
                 score_vector.append({"毎日": 1, "週数回": 0.5, "ほとんど食べない": 0}[ans])
-            elif i == 4:  # H/E（外食頻度）
+            elif i == 4:  # 外食頻度（H/E）
                 score_vector.append(0 if ans == "はい" else 1)
             elif i in [5, 6, 7]:  # F/B（すべて YES = 0）
                 score_vector.append(0 if ans == "はい" else 1)
@@ -105,10 +105,9 @@ elif st.session_state.page == "result":
         st.warning("全体マップ画像が見つかりませんでした")
 
     st.markdown("---")
-    if st.button("もう一度ベジる", key="retry_button"):
+    if st.button("もう一度診断する", key="retry_button"):
         st.session_state.page = "question"
         st.rerun()
 
-st.markdown("## 👉 [🍅 アンケートに答える！](https://forms.gle/wqSDceBHjkmaFhp78)")
-
-
+    # ✅ アンケートリンク（結果ページの最後にだけ表示）
+    st.markdown("## 👉 [🍅 アンケートに答える！](https://forms.gle/wqSDceBHjkmaFhp78)")
