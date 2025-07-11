@@ -108,3 +108,12 @@ elif st.session_state.page == "result":
     if st.button("もう一度ベジる", key="retry_button"):
         st.session_state.page = "question"
         st.rerun()
+
+st.markdown("""
+<div style='text-align:center; margin-top: 30px;'>
+  <a href='https://forms.gle/wqSDceBHjkmaFhp78' target='_blank' style='font-size:22px; font-weight:bold; color:#E74C3C; text-decoration:none;'>
+    🍅 診断に関するアンケートにご協力ください 🍅
+  </a>
+</div>
+""", unsafe_allow_html=True)
+
