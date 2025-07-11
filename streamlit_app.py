@@ -9,7 +9,7 @@ st.write("これは最新版です！より詳しく診断します👀")
 if "page" not in st.session_state:
     st.session_state.page = "question"
 
-st.title("ベジタイプ16診断")
+st.title("ベジタイプ16診断　２nd")
 
 # 質問と選択肢の定義（最新版 12問）
 questions = [
